@@ -1,11 +1,11 @@
-package xyz.acrylicstyle.recipeViewer.commands;
+package xyz.acrylicstyle.recipeviewer.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Keyed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -13,24 +13,34 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import util.CollectionList;
-import xyz.acrylicstyle.recipeViewer.gui.RecipeGui;
-import xyz.acrylicstyle.tomeito_api.command.PlayerCommandExecutor;
+import xyz.acrylicstyle.recipeviewer.gui.RecipeGui;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class ViewRecipeCommand extends PlayerCommandExecutor implements TabCompleter {
+public class ViewRecipeCommand implements TabExecutor {
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "This command cannot be executed from console");
+            return true;
+        }
+        onCommand((Player) sender, args);
+        return true;
+    }
+
     public void onCommand(Player player, String[] args) {
         if (args.length == 0) {
             player.sendMessage(ChatColor.RED + "/viewrecipe <namespaced id>");
             return;
         }
-        CollectionList<Recipe> recipes = new CollectionList<>();
+        List<Recipe> recipes = new ArrayList<>();
         Bukkit.recipeIterator().forEachRemaining(recipes::add);
         recipes
+                .stream()
                 .filter(recipe -> recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe)
                 .map(r -> (Keyed) r)
                 .filter(k -> k.getKey().toString().equals(args[0]))
@@ -65,19 +75,20 @@ public class ViewRecipeCommand extends PlayerCommandExecutor implements TabCompl
         return Collections.emptyList();
     }
 
-    private static CollectionList<String> getRecipes() {
-        CollectionList<Recipe> recipes = new CollectionList<>();
+    private static List<String> getRecipes() {
+        List<Recipe> recipes = new ArrayList<>();
         Bukkit.recipeIterator().forEachRemaining(recipes::add);
-        return recipes.filter(recipe -> recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe)
+        return recipes.stream().filter(recipe -> recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe)
                 .map(r -> (Keyed) r)
-                .map(k -> k.getKey().toString());
+                .map(k -> k.getKey().toString())
+                .collect(Collectors.toList());
     }
 
-    private static CollectionList<String> filterArgsList(CollectionList<String> list, String s) {
-        return list.filter(s2 -> {
+    private static List<String> filterArgsList(List<String> list, String s) {
+        return list.stream().filter(s2 -> {
             String l = s2.toLowerCase();
             String l2 = s.toLowerCase();
             return l.replaceAll(".*:(.*)", "$1").startsWith(l2.replaceAll(".*:(.*)", "$1")) || l.startsWith(l2);
-        });
+        }).collect(Collectors.toList());
     }
 }

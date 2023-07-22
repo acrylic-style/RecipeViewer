@@ -1,9 +1,7 @@
 name: RecipeViewer
-main: xyz.acrylicstyle.recipeViewer.RecipeViewer
+main: xyz.acrylicstyle.recipeviewer.RecipeViewer
 version: "1.0"
-api-version: "1.15"
-depend:
-  - TomeitoLib
+api-version: 1.13
 commands:
   viewrecipe:
     description: "View recipe"

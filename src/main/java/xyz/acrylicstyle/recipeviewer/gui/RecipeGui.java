@@ -1,4 +1,4 @@
-package xyz.acrylicstyle.recipeViewer.gui;
+package xyz.acrylicstyle.recipeviewer.gui;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -11,7 +11,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
-import xyz.acrylicstyle.recipeViewer.RecipeViewer;
 
 public class RecipeGui implements InventoryHolder, Listener {
     private final ItemStack[] matrix;
@@ -20,7 +19,6 @@ public class RecipeGui implements InventoryHolder, Listener {
     public RecipeGui(ItemStack[] matrix, ItemStack result) {
         this.matrix = matrix;
         this.result = result;
-        Bukkit.getPluginManager().registerEvents(this, RecipeViewer.instance);
     }
 
     @Override
@@ -28,6 +26,7 @@ public class RecipeGui implements InventoryHolder, Listener {
     public Inventory getInventory() {
         ItemStack b = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
         ItemMeta meta = b.getItemMeta();
+        assert meta != null;
         meta.setDisplayName(" ");
         b.setItemMeta(meta);
         Inventory inventory = Bukkit.createInventory(this, 45, "Recipe");
@@ -85,15 +84,17 @@ public class RecipeGui implements InventoryHolder, Listener {
         return inventory;
     }
 
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getInventory().getHolder() != this) return;
-        e.setCancelled(true);
-    }
+    public static class EventListener implements Listener {
+        @EventHandler
+        public void onInventoryClick(InventoryClickEvent e) {
+            if (!(e.getInventory().getHolder() instanceof RecipeGui)) return;
+            e.setCancelled(true);
+        }
 
-    @EventHandler
-    public void onInventoryDrag(InventoryDragEvent e) {
-        if (e.getInventory().getHolder() != this) return;
-        e.setCancelled(true);
+        @EventHandler
+        public void onInventoryDrag(InventoryDragEvent e) {
+            if (!(e.getInventory().getHolder() instanceof RecipeGui)) return;
+            e.setCancelled(true);
+        }
     }
 }
